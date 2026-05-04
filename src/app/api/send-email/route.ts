@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     }
 
     const data = await resend.emails.send({
-      from: 'Pasos con Propósito <eventos@tudominio.com>', // User needs to configure their domain in Resend
+      from: 'Pasos con Propósito <onboarding@resend.dev>', // Usar correo de prueba de Resend
       to: email,
       subject,
       html,
