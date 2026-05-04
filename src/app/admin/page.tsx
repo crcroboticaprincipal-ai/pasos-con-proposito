@@ -4,22 +4,28 @@ import { useState } from 'react';
 import AdminPanel from '@/components/AdminPanel';
 import { Lock, ChevronRight } from 'lucide-react';
 
+import { verifyPassword } from './actions';
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Default password for demonstration. In production, this should be an environment variable.
-    const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    setIsVerifying(true);
+    setError('');
     
-    if (password === ADMIN_PASSWORD) {
+    const isValid = await verifyPassword(password);
+    
+    if (isValid) {
       setIsAuthenticated(true);
       setError('');
     } else {
       setError('Contraseña incorrecta');
     }
+    setIsVerifying(false);
   };
 
   if (!isAuthenticated) {
@@ -45,10 +51,11 @@ export default function AdminPage() {
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
             <button 
               type="submit" 
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:from-blue-500 hover:to-indigo-500 transition-all flex items-center justify-center gap-2"
+              disabled={isVerifying}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:from-blue-500 hover:to-indigo-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Ingresar
-              <ChevronRight className="w-5 h-5" />
+              {isVerifying ? 'Verificando...' : 'Ingresar'}
+              {!isVerifying && <ChevronRight className="w-5 h-5" />}
             </button>
           </form>
           <p className="text-xs text-white/40 text-center mt-6">
