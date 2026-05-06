@@ -54,7 +54,7 @@ export default function Home() {
               <span className="text-white/40 font-medium">Imágenes del Evento</span>
             </div>
             <div className="absolute bottom-6 left-6 z-20">
-              <p className="text-white font-bold text-xl">Domingo, 15 de Noviembre</p>
+              <p className="text-white font-bold text-xl">Viernes, 22 de Mayo</p>
               <p className="text-blue-300 font-medium">Salida: Sede Principal</p>
             </div>
           </div>
