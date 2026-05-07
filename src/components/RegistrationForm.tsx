@@ -96,9 +96,18 @@ export default function RegistrationForm() {
           .from('receipts')
           .upload(fileName, receiptFile, { upsert: false, contentType: receiptFile.type });
 
-        if (uploadError) {
+      if (uploadError) {
           console.error('Upload error:', uploadError);
-          setError(`Error subiendo el comprobante: ${uploadError.message}`);
+          const isNetworkError = uploadError.message?.toLowerCase().includes('failed to fetch') || uploadError.message?.toLowerCase().includes('network');
+          const isSizeError = uploadError.message?.toLowerCase().includes('size') || uploadError.message?.toLowerCase().includes('large');
+          
+          if (isNetworkError) {
+            setError('Error de conexión al subir la imagen. Verifica tu internet o desactiva tu bloqueador de anuncios e intenta de nuevo.');
+          } else if (isSizeError) {
+            setError('La imagen es demasiado pesada. Por favor, intenta con una imagen más ligera (máx. 5MB).');
+          } else {
+            setError(`Error subiendo el comprobante: ${uploadError.message}`);
+          }
           return;
         }
 
@@ -123,21 +132,34 @@ export default function RegistrationForm() {
 
       if (dbError) {
         console.error('DB error:', dbError);
-        setError(`Error guardando la inscripción: ${dbError.message}`);
+        if (dbError.message?.toLowerCase().includes('failed to fetch')) {
+          setError('Error de conexión a la base de datos. Verifica tu internet o si tienes un bloqueador de anuncios activado.');
+        } else {
+          setError(`Error guardando la inscripción: ${dbError.message}`);
+        }
         return;
       }
 
       // Send notification email
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, type: 'registration' }),
-      });
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name, type: 'registration' }),
+        });
+      } catch (emailErr) {
+        console.error('Email send error:', emailErr);
+        // We don't block the success message if only the email fails
+      }
 
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
-      setError('Ocurrió un error inesperado. Inténtalo de nuevo.');
+      if (err.message?.toLowerCase().includes('failed to fetch')) {
+        setError('Ocurrió un error de conexión de red (Failed to fetch). Revisa tu internet o intenta desde otro navegador.');
+      } else {
+        setError('Ocurrió un error inesperado. Inténtalo de nuevo.');
+      }
     } finally {
       setIsSubmitting(false);
     }
