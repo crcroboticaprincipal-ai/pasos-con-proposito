@@ -1,7 +1,13 @@
+'use client';
+
 import RegistrationForm from '@/components/RegistrationForm';
-import { Activity, Heart, Users, Medal } from 'lucide-react';
+import { Activity, Heart, Users, Medal, Calendar, MapPin, Clock } from 'lucide-react';
 
 export default function Home() {
+  const eventDate = new Date('2026-05-22T08:00:00');
+  const now = new Date();
+  const msLeft = eventDate.getTime() - now.getTime();
+  const daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
   return (
     <main className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       
@@ -54,11 +60,33 @@ export default function Home() {
               <span className="text-white/40 font-medium">Imágenes del Evento</span>
             </div>
             <div className="absolute bottom-6 left-6 z-20">
-              <p className="text-white font-bold text-xl">Viernes, 22 de Mayo</p>
-              <p className="text-blue-300 font-medium">Salida: U.E Colegio Rafael Castillo</p>
+              <p className="text-white font-bold text-xl">Viernes, 22 de Mayo de 2026</p>
+              <p className="text-blue-300 font-medium">Salida: Sede Principal del Colegio Rafael Castillo</p>
             </div>
           </div>
-          
+
+          {/* Event Details Bar */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { icon: Calendar, label: 'Fecha', value: '22 Mayo 2026' },
+              { icon: Clock, label: 'Hora', value: '8:00 AM' },
+              { icon: MapPin, label: 'Lugar', value: 'Sede Principal' },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-1 text-center">
+                <Icon className="w-5 h-5 text-blue-400" />
+                <p className="text-white/50 text-xs">{label}</p>
+                <p className="text-white font-bold text-sm">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Countdown */}
+          <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-2xl p-4 text-center">
+            <p className="text-white/60 text-xs uppercase tracking-widest mb-1">Faltan</p>
+            <p className="text-4xl font-extrabold text-white">{daysLeft}</p>
+            <p className="text-blue-300 text-sm font-medium">días para el evento</p>
+          </div>
+
         </div>
 
         {/* Right Column: Registration Form */}
