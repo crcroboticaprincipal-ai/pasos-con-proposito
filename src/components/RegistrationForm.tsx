@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Upload, ChevronRight, User, Users, CheckCircle } from 'lucide-react';
+import { Upload, ChevronRight, User, Users, CheckCircle, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type BankSettings = {
@@ -78,10 +78,11 @@ export default function RegistrationForm() {
       const name = (formData.get('name') as string).trim();
       const cedula = (formData.get('cedula') as string).trim();
       const email = (formData.get('email') as string).trim();
+      const whatsapp = (formData.get('whatsapp') as string).trim();
       const ref = (formData.get('reference') as string).trim();
       const institution = (formData.get('institution') as string | null)?.trim() || null;
 
-      if (!name || !cedula || !email || !ref) {
+      if (!name || !cedula || !email || !whatsapp || !ref) {
         setError('Por favor completa todos los campos obligatorios.');
         return;
       }
@@ -123,6 +124,7 @@ export default function RegistrationForm() {
         name,
         cedula,
         email,
+        whatsapp,
         reference: ref,
         institution,
         receipt_url: receiptUrl,
@@ -295,6 +297,19 @@ export default function RegistrationForm() {
                 name="email"
                 placeholder="Correo Electrónico *"
                 className="w-full bg-white/5 border border-white/20 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-white/40"
+              />
+            </div>
+
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-green-400">
+                <Phone className="w-4 h-4" />
+              </div>
+              <input
+                required
+                type="tel"
+                name="whatsapp"
+                placeholder="Número de WhatsApp * (ej: 0414-1234567)"
+                className="w-full bg-white/5 border border-white/20 rounded-xl p-3 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-green-500 placeholder:text-white/40"
               />
             </div>
 
