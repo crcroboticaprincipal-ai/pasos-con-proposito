@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   CheckCircle, XCircle, Settings, Users, Activity,
-  FileImage, Save, RefreshCw, AlertCircle,
+  FileImage, Save, RefreshCw, AlertCircle, Download,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,6 +17,7 @@ type Registration = {
   name: string;
   cedula: string;
   email: string;
+  whatsapp: string;
   reference: string;
   institution: string;
   receipt_url: string;
@@ -144,6 +145,38 @@ export default function AdminPanel() {
     setSettingsSaved(false);
   };
 
+  const exportToExcel = () => {
+    const BOM = '\uFEFF';
+    const headers = ['#', 'Fecha', 'Nombre', 'Cédula', 'Email', 'WhatsApp', 'Tipo', 'Modalidad', 'Categoría', 'Institución', 'Referencia', 'Monto (Bs)', 'Estado'];
+    const rows = registrations.map((r, i) => [
+      i + 1,
+      new Date(r.created_at).toLocaleDateString('es-VE'),
+      r.name,
+      r.cedula,
+      r.email,
+      r.whatsapp || 'N/A',
+      r.type === 'individual' ? 'Individual' : 'Familiar',
+      r.modality === 'carrera' ? 'Carrera 4K' : 'Caminata 4K',
+      r.participant_type === 'estudiante' ? 'Estudiante' : r.participant_type === 'familiar' ? 'Familiar' : 'General',
+      r.institution || '-',
+      r.reference,
+      r.amount,
+      r.status === 'verified' ? 'VERIFICADO' : 'PENDIENTE',
+    ]);
+
+    const csvContent = BOM + [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `inscritos_pasos_con_proposito_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const stats = {
     total: registrations.length,
     pending: registrations.filter(r => r.status === 'pending').length,
@@ -202,14 +235,23 @@ export default function AdminPanel() {
         <div className="p-6">
           {activeTab === 'list' ? (
             <div>
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                 <h3 className="text-white font-semibold">Lista de Inscripciones</h3>
-                <button
-                  onClick={fetchRegistrations}
-                  className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" /> Actualizar
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={exportToExcel}
+                    disabled={registrations.length === 0}
+                    className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-green-600/80 hover:bg-green-500 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed font-medium"
+                  >
+                    <Download className="w-4 h-4" /> Exportar Excel
+                  </button>
+                  <button
+                    onClick={fetchRegistrations}
+                    className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" /> Actualizar
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-white">
@@ -231,6 +273,7 @@ export default function AdminPanel() {
                         <td className="px-4 py-3">
                           <div className="font-medium">{reg.name}</div>
                           <div className="text-white/50 text-xs">{reg.email}</div>
+                          {reg.whatsapp && <div className="text-green-300/70 text-xs">📱 {reg.whatsapp}</div>}
                           {reg.institution && <div className="text-blue-300/70 text-xs">{reg.institution}</div>}
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">{reg.cedula}</td>
